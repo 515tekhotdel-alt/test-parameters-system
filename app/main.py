@@ -28,10 +28,10 @@ def main():
         layout="wide"
     )
 
-    # ===== СТИЛИ ДЛЯ КНОПОК (НАДЕЖНЫЙ ВАРИАНТ) =====
+    # ===== СТИЛИ ДЛЯ КНОПОК =====
     st.markdown("""
     <style>
-        /* Все кнопки с type="primary" — зеленые (Дети) */
+        /* Активная кнопка (primary) — зеленая (Дети) */
         .stButton > button[kind="primary"] {
             background-color: #4CAF50 !important;
             color: white !important;
@@ -43,16 +43,16 @@ def main():
             color: white !important;
         }
         
-        /* Все кнопки с type="secondary" — синие (Взрослые) */
+        /* Неактивные кнопки (secondary) — серые */
         .stButton > button[kind="secondary"] {
-            background-color: #1E88E5 !important;
-            color: white !important;
-            border-color: #1E88E5 !important;
+            background-color: #555555 !important;
+            color: #aaaaaa !important;
+            border-color: #555555 !important;
         }
         .stButton > button[kind="secondary"]:hover {
-            background-color: #1565C0 !important;
-            border-color: #1565C0 !important;
-            color: white !important;
+            background-color: #666666 !important;
+            border-color: #666666 !important;
+            color: #cccccc !important;
         }
     </style>
     """, unsafe_allow_html=True)
