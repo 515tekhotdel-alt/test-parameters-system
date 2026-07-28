@@ -6,8 +6,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Загружаем .env
-load_dotenv()
+# Загружаем .env только если файл существует
+env_file = Path(__file__).parent.parent / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
 
 # Корень проекта
 BASE_DIR = Path(__file__).parent.parent
@@ -24,14 +26,14 @@ PROTOCOLS_DIR = RAW_DATA_DIR / "protocols"
 # Логи
 LOGS_DIR = BASE_DIR / "logs"
 
-# DeepSeek
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+# DeepSeek (безопасное получение ключа)
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
 DEEPSEEK_MODEL = "deepseek-chat"
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1"
 
 # Пороги частотности
-MANDATORY_THRESHOLD = 0.90      # >90% → обязательный
-FREQUENT_THRESHOLD = 0.50       # 50-90% → частый
+MANDATORY_THRESHOLD = 0.90
+FREQUENT_THRESHOLD = 0.50
 
 # Логирование
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
