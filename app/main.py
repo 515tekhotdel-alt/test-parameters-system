@@ -28,40 +28,31 @@ def main():
         layout="wide"
     )
 
-    # Стили для кнопок: Дети — зеленая (активная), Взрослые — синяя (активная)
+    # ===== СТИЛИ ДЛЯ КНОПОК (НАДЕЖНЫЙ ВАРИАНТ) =====
     st.markdown("""
     <style>
-        /* Кнопка "Дети" — зеленая (активная) */
-        .stButton button[data-testid="baseButton-primary"]:not(:has(.icon-adults)) {
+        /* Все кнопки с type="primary" — зеленые (Дети) */
+        .stButton > button[kind="primary"] {
             background-color: #4CAF50 !important;
             color: white !important;
             border-color: #4CAF50 !important;
         }
-        .stButton button[data-testid="baseButton-primary"]:not(:has(.icon-adults)):hover {
+        .stButton > button[kind="primary"]:hover {
             background-color: #388E3C !important;
             border-color: #388E3C !important;
+            color: white !important;
         }
         
-        /* Кнопка "Взрослые" — синяя (активная) */
-        .stButton button[data-testid="baseButton-primary"]:has(.icon-adults) {
+        /* Все кнопки с type="secondary" — синие (Взрослые) */
+        .stButton > button[kind="secondary"] {
             background-color: #1E88E5 !important;
             color: white !important;
             border-color: #1E88E5 !important;
         }
-        .stButton button[data-testid="baseButton-primary"]:has(.icon-adults):hover {
+        .stButton > button[kind="secondary"]:hover {
             background-color: #1565C0 !important;
             border-color: #1565C0 !important;
-        }
-        
-        /* Неактивные кнопки — серые */
-        .stButton button[data-testid="baseButton-secondary"] {
-            background-color: #424242 !important;
-            color: #888 !important;
-            border-color: #555 !important;
-        }
-        .stButton button[data-testid="baseButton-secondary"]:hover {
-            background-color: #555 !important;
-            border-color: #666 !important;
+            color: white !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -300,7 +291,6 @@ def main():
             if param_key not in st.session_state:
                 st.session_state[param_key] = True
 
-            # Компактные колонки: номер (0.07), чекбокс (0.04), текст (0.89)
             col1, col2, col3 = st.columns([0.07, 0.04, 0.89], vertical_alignment="center")
 
             with col1:
