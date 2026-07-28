@@ -163,10 +163,8 @@ def main():
     children_df = df[df["ТР ТС"].str.contains("007", na=False)]
     adults_df = df[df["ТР ТС"].str.contains("017", na=False)]
 
-    logger.info(
-        f"👶 Детских (ТР ТС 007): {len(children_df)} записей, {children_df['Наименование объекта испытаний'].nunique()} продуктов")
-    logger.info(
-        f"👨 Взрослых (ТР ТС 017): {len(adults_df)} записей, {adults_df['Наименование объекта испытаний'].nunique()} продуктов")
+    logger.info(f"👶 Детских (ТР ТС 007): {len(children_df)} записей, {children_df['Наименование объекта испытаний'].nunique()} продуктов")
+    logger.info(f"👨 Взрослых (ТР ТС 017): {len(adults_df)} записей, {adults_df['Наименование объекта испытаний'].nunique()} продуктов")
 
     results = {
         "tr_ts_007": {"rules": [], "summary": {}},
@@ -174,10 +172,9 @@ def main():
     }
 
     for tr_ts_name, df_group in [("tr_ts_007", children_df), ("tr_ts_017", adults_df)]:
-
-        logger.info(f"\n{'=' * 80}")
+        logger.info(f"\n{'='*80}")
         logger.info(f"📋 ОБРАБОТКА: {tr_ts_name}")
-        logger.info(f"{'=' * 80}")
+        logger.info(f"{'='*80}")
 
         products = df_group["Наименование объекта испытаний"].dropna().unique().tolist()
 
@@ -187,11 +184,22 @@ def main():
             cats = extract_category(name)
             product_categories[name] = cats
 
-        # Группируем по категориям
-        groups = defaultdict(list)
-        for name, cats in product_categories.items():
-            key = f"{cats['age']}|{cats['layer']}|{cats['construction']}|{cats['product_type']}"
-            groups[key].append(name)
+        # Группируем по КЛЮЧУ БЕЗ ВОЗРАСТА (для взрослых)
+        # Для детей возраст важен, для взрослых — нет
+        if tr_ts_name == "tr_ts_007":
+            # Детские — группируем с возрастом
+            groups = defaultdict(list)
+            for name, cats in product_categories.items():
+                key = f"{cats['age']}|{cats['layer']}|{cats['construction']}|{cats['product_type']}"
+                groups[key].append(name)
+        else:
+            # Взрослые — группируем БЕЗ возраста (объединяем взрослые и не_определен)
+            groups = defaultdict(list)
+            for name, cats in product_categories.items():
+                # Для взрослых возраст не важен — заменяем на "взрослые"
+                age = "взрослые" if cats['age'] in ["взрослые", "не_определен"] else cats['age']
+                key = f"{age}|{cats['layer']}|{cats['construction']}|{cats['product_type']}"
+                groups[key].append(name)
 
         logger.info(f"✅ Уникальных групп: {len(groups)}")
 
@@ -203,15 +211,13 @@ def main():
             # Собираем показатели для всех продуктов в группе
             all_params = []
             for name in products_list:
-                params = df_group[df_group["Наименование объекта испытаний"] == name][
-                    "Контролируемый показатель"].dropna().unique().tolist()
+                params = df_group[df_group["Наименование объекта испытаний"] == name]["Контролируемый показатель"].dropna().unique().tolist()
                 all_params.extend(params)
 
-            # Частота показателей
             param_counts = Counter(all_params)
             total_products = len(products_list)
 
-            # Обязательные (> 60% продуктов)
+            # Обязательные (> 60%)
             mandatory = [p for p, c in param_counts.items() if c / total_products >= 0.6]
 
             # Частые (30-60%)
@@ -228,12 +234,11 @@ def main():
                 "frequent_parameters": sorted(frequent)
             })
 
-        # Сортируем по количеству продуктов (по убыванию)
+        # Сортируем по количеству продуктов
         group_stats.sort(key=lambda x: x["product_count"], reverse=True)
 
         results[tr_ts_name]["rules"] = group_stats
 
-        # Сводка
         total_groups = len(group_stats)
         total_products = sum(g["product_count"] for g in group_stats)
         avg_params = sum(len(g["mandatory_parameters"]) for g in group_stats) / total_groups if total_groups > 0 else 0
@@ -255,7 +260,7 @@ def main():
 
     logger.info(f"\n✅ Сохранено: {output_file}")
 
-    # Показываем статистику
+    # Сводка
     print("\n" + "=" * 80)
     print("📊 СВОДКА ПО ТР ТС")
     print("=" * 80)

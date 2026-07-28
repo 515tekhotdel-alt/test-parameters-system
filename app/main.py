@@ -100,15 +100,16 @@ def main():
         filtered_vals = get_filtered_values(rules_data, tr_ts_key, current_selected)
 
         # ===== ТИП ИЗДЕЛИЯ =====
-        current_idx = 0
-        if st.session_state.selected_product_type in filtered_vals["product_types"]:
-            current_idx = filtered_vals["product_types"].index(st.session_state.selected_product_type)
+        # Находим индекс для выбранного значения
+        try:
+            idx = filtered_vals["product_types"].index(st.session_state.selected_product_type)
+        except ValueError:
+            idx = 0
 
         product_type = st.selectbox(
             "📌 Тип изделия",
             filtered_vals["product_types"],
-            index=current_idx,
-            key="product_type_select"
+            index=idx
         )
         if product_type != st.session_state.selected_product_type:
             st.session_state.selected_product_type = product_type
@@ -117,45 +118,45 @@ def main():
         # ===== ВОЗРАСТ =====
         age = ""
         if filtered_vals["show_age"]:
-            current_idx = 0
-            if st.session_state.selected_age in filtered_vals["ages"]:
-                current_idx = filtered_vals["ages"].index(st.session_state.selected_age)
+            try:
+                idx = filtered_vals["ages"].index(st.session_state.selected_age)
+            except ValueError:
+                idx = 0
 
             age = st.selectbox(
                 "👶 Возрастная группа",
                 filtered_vals["ages"],
-                index=current_idx,
-                key="age_select"
+                index=idx
             )
             if age != st.session_state.selected_age:
                 st.session_state.selected_age = age
                 st.rerun()
 
         # ===== СЛОЙ =====
-        current_idx = 0
-        if st.session_state.selected_layer in filtered_vals["layers"]:
-            current_idx = filtered_vals["layers"].index(st.session_state.selected_layer)
+        try:
+            idx = filtered_vals["layers"].index(st.session_state.selected_layer)
+        except ValueError:
+            idx = 0
 
         layer = st.selectbox(
             "👕 Слой",
             filtered_vals["layers"],
-            index=current_idx,
-            key="layer_select"
+            index=idx
         )
         if layer != st.session_state.selected_layer:
             st.session_state.selected_layer = layer
             st.rerun()
 
         # ===== КОНСТРУКЦИЯ =====
-        current_idx = 0
-        if st.session_state.selected_construction in filtered_vals["constructions"]:
-            current_idx = filtered_vals["constructions"].index(st.session_state.selected_construction)
+        try:
+            idx = filtered_vals["constructions"].index(st.session_state.selected_construction)
+        except ValueError:
+            idx = 0
 
         construction = st.selectbox(
             "🧵 Конструкция",
             filtered_vals["constructions"],
-            index=current_idx,
-            key="construction_select"
+            index=idx
         )
         if construction != st.session_state.selected_construction:
             st.session_state.selected_construction = construction
@@ -182,6 +183,7 @@ def main():
             )
 
         if reset_clicked:
+            # Сбрасываем все выбранные значения
             st.session_state.selected_product_type = ""
             st.session_state.selected_age = ""
             st.session_state.selected_layer = ""
