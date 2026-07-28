@@ -51,7 +51,7 @@ def main():
         st.session_state.selected_construction = ""
 
     st.title("📋 Подбор контролируемых показателей")
-    st.markdown("**Источник:** Протоколы испытаний (520 продуктов, 16 990 записей)")
+    #st.markdown("**Источник:** Протоколы испытаний (520 продуктов, 16 990 записей)")
     st.markdown("---")
 
     rules_data = load_rules()
