@@ -28,6 +28,44 @@ def main():
         layout="wide"
     )
 
+    # Стили для кнопок: Дети — зеленая (активная), Взрослые — синяя (активная)
+    st.markdown("""
+    <style>
+        /* Кнопка "Дети" — зеленая (активная) */
+        .stButton button[data-testid="baseButton-primary"]:not(:has(.icon-adults)) {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-color: #4CAF50 !important;
+        }
+        .stButton button[data-testid="baseButton-primary"]:not(:has(.icon-adults)):hover {
+            background-color: #388E3C !important;
+            border-color: #388E3C !important;
+        }
+        
+        /* Кнопка "Взрослые" — синяя (активная) */
+        .stButton button[data-testid="baseButton-primary"]:has(.icon-adults) {
+            background-color: #1E88E5 !important;
+            color: white !important;
+            border-color: #1E88E5 !important;
+        }
+        .stButton button[data-testid="baseButton-primary"]:has(.icon-adults):hover {
+            background-color: #1565C0 !important;
+            border-color: #1565C0 !important;
+        }
+        
+        /* Неактивные кнопки — серые */
+        .stButton button[data-testid="baseButton-secondary"] {
+            background-color: #424242 !important;
+            color: #888 !important;
+            border-color: #555 !important;
+        }
+        .stButton button[data-testid="baseButton-secondary"]:hover {
+            background-color: #555 !important;
+            border-color: #666 !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Инициализация состояния
     if "tr_ts" not in st.session_state:
         st.session_state.tr_ts = "tr_ts_017"
@@ -51,7 +89,6 @@ def main():
         st.session_state.selected_construction = ""
 
     st.title("📋 Подбор контролируемых показателей")
-    #st.markdown("**Источник:** Протоколы испытаний (520 продуктов, 16 990 записей)")
     st.markdown("---")
 
     rules_data = load_rules()
@@ -263,7 +300,7 @@ def main():
             if param_key not in st.session_state:
                 st.session_state[param_key] = True
 
-            # Увеличиваем ширину для номера: 0.07 вместо 0.04
+            # Компактные колонки: номер (0.07), чекбокс (0.04), текст (0.89)
             col1, col2, col3 = st.columns([0.07, 0.04, 0.89], vertical_alignment="center")
 
             with col1:
