@@ -28,31 +28,43 @@ def main():
         layout="wide"
     )
 
-    # ===== СТИЛИ ДЛЯ КНОПОК =====
+    # ===== СТИЛИ ДЛЯ КНОПОК (через уникальные ключи) =====
     st.markdown("""
     <style>
-        /* Активная кнопка "Дети" (primary) — зеленая */
-        .stButton > button[kind="primary"] {
+        /* Кнопка "Дети" (key=btn_children) — зеленая когда выбрана */
+        div[class*="st-key-btn_children"] .stButton button {
             background-color: #4CAF50 !important;
             color: white !important;
             border-color: #4CAF50 !important;
         }
-        .stButton > button[kind="primary"]:hover {
+        div[class*="st-key-btn_children"] .stButton button:hover {
             background-color: #388E3C !important;
             border-color: #388E3C !important;
             color: white !important;
         }
         
-        /* Активная кнопка "Взрослые" (secondary) — синяя */
-        .stButton > button[kind="secondary"] {
+        /* Кнопка "Взрослые" (key=btn_adults) — синяя когда выбрана */
+        div[class*="st-key-btn_adults"] .stButton button {
             background-color: #1E88E5 !important;
             color: white !important;
             border-color: #1E88E5 !important;
         }
-        .stButton > button[kind="secondary"]:hover {
+        div[class*="st-key-btn_adults"] .stButton button:hover {
             background-color: #1565C0 !important;
             border-color: #1565C0 !important;
             color: white !important;
+        }
+        
+        /* Неактивные кнопки — серые (стандартные) */
+        .stButton button[kind="secondary"] {
+            background-color: #555555 !important;
+            color: #aaaaaa !important;
+            border-color: #555555 !important;
+        }
+        .stButton button[kind="secondary"]:hover {
+            background-color: #666666 !important;
+            color: #cccccc !important;
+            border-color: #666666 !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -97,20 +109,24 @@ def main():
 
         with col1:
             is_children = st.session_state.tr_ts == "tr_ts_007"
+            # Уникальный ключ для кнопки "Дети"
             if st.button(
                 "👶 Дети",
                 use_container_width=True,
-                type="primary" if is_children else "secondary"
+                type="primary" if is_children else "secondary",
+                key="btn_children"  # ← уникальный ключ
             ):
                 st.session_state.tr_ts = "tr_ts_007"
                 st.rerun()
 
         with col2:
             is_adults = st.session_state.tr_ts == "tr_ts_017"
+            # Уникальный ключ для кнопки "Взрослые"
             if st.button(
                 "👨 Взрослые",
                 use_container_width=True,
-                type="secondary" if is_adults else "primary"
+                type="primary" if is_adults else "secondary",
+                key="btn_adults"  # ← уникальный ключ
             ):
                 st.session_state.tr_ts = "tr_ts_017"
                 st.rerun()
@@ -199,14 +215,16 @@ def main():
             search_clicked = st.button(
                 "🔍 Найти показатели",
                 type="primary",
-                use_container_width=True
+                use_container_width=True,
+                key="btn_search"
             )
 
         with col_btn2:
             reset_clicked = st.button(
                 "🔄 Сброс",
                 type="secondary",
-                use_container_width=True
+                use_container_width=True,
+                key="btn_reset"
             )
 
         if reset_clicked:
@@ -335,7 +353,8 @@ def main():
                 st.button(
                     "📊 Скачать Excel (0)",
                     use_container_width=True,
-                    disabled=True
+                    disabled=True,
+                    key="excel_disabled"
                 )
 
         with col2:
@@ -353,7 +372,8 @@ def main():
                 st.button(
                     "📄 Скачать Word (0)",
                     use_container_width=True,
-                    disabled=True
+                    disabled=True,
+                    key="word_disabled"
                 )
 
         with st.expander("📖 Информация о правиле", expanded=True):
