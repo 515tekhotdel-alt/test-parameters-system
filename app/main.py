@@ -31,7 +31,7 @@ def main():
     # ===== СТИЛИ ДЛЯ КНОПОК =====
     st.markdown("""
     <style>
-        /* Активная кнопка (primary) — зеленая (Дети) */
+        /* Активная кнопка "Дети" (primary) — зеленая */
         .stButton > button[kind="primary"] {
             background-color: #4CAF50 !important;
             color: white !important;
@@ -43,16 +43,16 @@ def main():
             color: white !important;
         }
         
-        /* Неактивные кнопки (secondary) — серые */
+        /* Активная кнопка "Взрослые" (secondary) — синяя */
         .stButton > button[kind="secondary"] {
-            background-color: #555555 !important;
-            color: #aaaaaa !important;
-            border-color: #555555 !important;
+            background-color: #1E88E5 !important;
+            color: white !important;
+            border-color: #1E88E5 !important;
         }
         .stButton > button[kind="secondary"]:hover {
-            background-color: #666666 !important;
-            border-color: #666666 !important;
-            color: #cccccc !important;
+            background-color: #1565C0 !important;
+            border-color: #1565C0 !important;
+            color: white !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -110,7 +110,7 @@ def main():
             if st.button(
                 "👨 Взрослые",
                 use_container_width=True,
-                type="primary" if is_adults else "secondary"
+                type="secondary" if is_adults else "primary"
             ):
                 st.session_state.tr_ts = "tr_ts_017"
                 st.rerun()
