@@ -28,40 +28,66 @@ def main():
         layout="wide"
     )
 
-    # ===== СТИЛИ ДЛЯ КНОПОК (через уникальные ключи) =====
+    # ===== СТИЛИ ДЛЯ КНОПОК =====
     st.markdown("""
     <style>
-        /* Кнопка "Дети" (key=btn_children) — зеленая когда выбрана */
-        div[class*="st-key-btn_children"] .stButton button {
+        /* Кнопка "Дети" (key=btn_children) — зеленая когда активна */
+        div[class*="st-key-btn_children"] .stButton button[kind="primary"] {
             background-color: #4CAF50 !important;
             color: white !important;
             border-color: #4CAF50 !important;
         }
-        div[class*="st-key-btn_children"] .stButton button:hover {
+        div[class*="st-key-btn_children"] .stButton button[kind="primary"]:hover {
             background-color: #388E3C !important;
             border-color: #388E3C !important;
             color: white !important;
         }
-        
-        /* Кнопка "Взрослые" (key=btn_adults) — синяя когда выбрана */
-        div[class*="st-key-btn_adults"] .stButton button {
+
+        /* Кнопка "Взрослые" (key=btn_adults) — синяя когда активна */
+        div[class*="st-key-btn_adults"] .stButton button[kind="primary"] {
             background-color: #1E88E5 !important;
             color: white !important;
             border-color: #1E88E5 !important;
         }
-        div[class*="st-key-btn_adults"] .stButton button:hover {
+        div[class*="st-key-btn_adults"] .stButton button[kind="primary"]:hover {
             background-color: #1565C0 !important;
             border-color: #1565C0 !important;
             color: white !important;
         }
-        
-        /* Неактивные кнопки — серые (стандартные) */
-        .stButton button[kind="secondary"] {
+
+        /* НЕАКТИВНЫЕ кнопки — СЕРЫЕ */
+        div[class*="st-key-btn_children"] .stButton button[kind="secondary"],
+        div[class*="st-key-btn_adults"] .stButton button[kind="secondary"] {
             background-color: #555555 !important;
             color: #aaaaaa !important;
             border-color: #555555 !important;
         }
-        .stButton button[kind="secondary"]:hover {
+        div[class*="st-key-btn_children"] .stButton button[kind="secondary"]:hover,
+        div[class*="st-key-btn_adults"] .stButton button[kind="secondary"]:hover {
+            background-color: #666666 !important;
+            color: #cccccc !important;
+            border-color: #666666 !important;
+        }
+
+        /* Кнопка "Найти показатели" — зеленая всегда */
+        div[class*="st-key-btn_search"] .stButton button {
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-color: #4CAF50 !important;
+        }
+        div[class*="st-key-btn_search"] .stButton button:hover {
+            background-color: #388E3C !important;
+            border-color: #388E3C !important;
+            color: white !important;
+        }
+
+        /* Кнопка "Сброс" — серая всегда */
+        div[class*="st-key-btn_reset"] .stButton button {
+            background-color: #555555 !important;
+            color: #aaaaaa !important;
+            border-color: #555555 !important;
+        }
+        div[class*="st-key-btn_reset"] .stButton button:hover {
             background-color: #666666 !important;
             color: #cccccc !important;
             border-color: #666666 !important;
@@ -109,24 +135,22 @@ def main():
 
         with col1:
             is_children = st.session_state.tr_ts == "tr_ts_007"
-            # Уникальный ключ для кнопки "Дети"
             if st.button(
-                "👶 Дети",
-                use_container_width=True,
-                type="primary" if is_children else "secondary",
-                key="btn_children"  # ← уникальный ключ
+                    "👶 Дети",
+                    use_container_width=True,
+                    type="primary" if is_children else "secondary",
+                    key="btn_children"
             ):
                 st.session_state.tr_ts = "tr_ts_007"
                 st.rerun()
 
         with col2:
             is_adults = st.session_state.tr_ts == "tr_ts_017"
-            # Уникальный ключ для кнопки "Взрослые"
             if st.button(
-                "👨 Взрослые",
-                use_container_width=True,
-                type="primary" if is_adults else "secondary",
-                key="btn_adults"  # ← уникальный ключ
+                    "👨 Взрослые",
+                    use_container_width=True,
+                    type="primary" if is_adults else "secondary",
+                    key="btn_adults"
             ):
                 st.session_state.tr_ts = "tr_ts_017"
                 st.rerun()
@@ -312,7 +336,7 @@ def main():
             col1, col2, col3 = st.columns([0.07, 0.04, 0.89], vertical_alignment="center")
 
             with col1:
-                st.markdown(f"**{i+1}.**")
+                st.markdown(f"**{i + 1}.**")
 
             with col2:
                 st.checkbox(
@@ -388,7 +412,7 @@ def main():
 
         if len(matched) > 1:
             st.markdown("---")
-            st.markdown(f"### 📚 Другие правила ({len(matched)-1})")
+            st.markdown(f"### 📚 Другие правила ({len(matched) - 1})")
 
             for item in matched[1:]:
                 rule = item["rule"]
@@ -396,8 +420,8 @@ def main():
                 sorted_other_params = sort_parameters_by_order(params, original_order)
 
                 with st.expander(
-                    f"📋 {rule.get('product_type', '?')} — {item['score']}% "
-                    f"({rule.get('product_count', 0)} продуктов)"
+                        f"📋 {rule.get('product_type', '?')} — {item['score']}% "
+                        f"({rule.get('product_count', 0)} продуктов)"
                 ):
                     st.markdown("**Условия:**")
                     if show_age and rule.get("age"):
