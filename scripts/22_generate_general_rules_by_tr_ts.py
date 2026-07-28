@@ -13,6 +13,15 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.utils.logger import logger
 from config.settings import RULES_DIR
 
+# ===== ЗАГОЛОВКИ РАЗДЕЛОВ (НЕ ПОКАЗАТЕЛИ) =====
+EXCLUDED_PARAMETERS = [
+    "Выделение вредных веществ в воду",
+    "Выделение вредных веществ в воздух",
+    "Миграция вредных веществ",
+    "Биологические показатели безопасности",
+    "Экстрагируемые вещества",
+]
+
 
 def load_data():
     """Загружает данные из Excel"""
@@ -211,7 +220,10 @@ def main():
             # Собираем показатели для всех продуктов в группе
             all_params = []
             for name in products_list:
-                params = df_group[df_group["Наименование объекта испытаний"] == name]["Контролируемый показатель"].dropna().unique().tolist()
+                params = df_group[df_group["Наименование объекта испытаний"] == name][
+                    "Контролируемый показатель"].dropna().unique().tolist()
+                # ===== ФИЛЬТРУЕМ ЗАГОЛОВКИ РАЗДЕЛОВ =====
+                params = [p for p in params if p not in EXCLUDED_PARAMETERS]
                 all_params.extend(params)
 
             param_counts = Counter(all_params)
