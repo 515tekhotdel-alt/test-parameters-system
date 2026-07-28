@@ -1,5 +1,5 @@
 """
-Главный интерфейс приложения
+Главный интерфейс приложения — с чекбоксами для показателей
 """
 
 import sys
@@ -100,7 +100,6 @@ def main():
         filtered_vals = get_filtered_values(rules_data, tr_ts_key, current_selected)
 
         # ===== ТИП ИЗДЕЛИЯ =====
-        # Находим индекс для выбранного значения
         try:
             idx = filtered_vals["product_types"].index(st.session_state.selected_product_type)
         except ValueError:
@@ -183,7 +182,6 @@ def main():
             )
 
         if reset_clicked:
-            # Сбрасываем все выбранные значения
             st.session_state.selected_product_type = ""
             st.session_state.selected_age = ""
             st.session_state.selected_layer = ""
@@ -192,6 +190,11 @@ def main():
             st.session_state.last_params = None
             st.session_state.last_rule_info = None
             st.session_state.last_show_age = False
+
+            for key in list(st.session_state.keys()):
+                if key.startswith("param_"):
+                    del st.session_state[key]
+
             st.rerun()
 
     # ===== ОБРАБОТКА ПОИСКА =====
@@ -227,6 +230,10 @@ def main():
                 st.session_state.last_params = sorted_params
                 st.session_state.last_rule_info = rule_info
                 st.session_state.last_show_age = filtered_vals["show_age"]
+
+                for key in list(st.session_state.keys()):
+                    if key.startswith("param_"):
+                        del st.session_state[key]
             else:
                 st.session_state.last_results = None
                 if st.session_state.selected_product_type:
@@ -246,41 +253,81 @@ def main():
 
         st.success(f"✅ Найдено {len(matched)} подходящих правил")
 
+        # ===== ТАБЛИЦА С ЧЕКБОКСАМИ =====
         st.markdown("### 📋 Список показателей")
-        df = pd.DataFrame(sorted_params, columns=["Контролируемый показатель"])
-        st.dataframe(
-            df,
-            use_container_width=True,
-            hide_index=True,
-            height=min(600, len(df) * 35 + 40)
-        )
 
+        selected_params = []
+
+        for i, p in enumerate(sorted_params):
+            param_key = f"param_{p}"
+            if param_key not in st.session_state:
+                st.session_state[param_key] = True
+
+            # Увеличиваем ширину для номера: 0.07 вместо 0.04
+            col1, col2, col3 = st.columns([0.07, 0.04, 0.89], vertical_alignment="center")
+
+            with col1:
+                st.markdown(f"**{i+1}.**")
+
+            with col2:
+                st.checkbox(
+                    "",
+                    value=st.session_state[param_key],
+                    key=param_key,
+                    label_visibility="collapsed"
+                )
+
+            with col3:
+                st.markdown(f"**{p}**")
+
+            if st.session_state[param_key]:
+                selected_params.append(p)
+
+        selected_count = len(selected_params)
+        total_count = len(sorted_params)
+        st.caption(f"✅ Выбрано {selected_count} из {total_count} показателей")
+
+        # ===== КНОПКИ ЭКСПОРТА =====
         st.markdown("---")
         st.markdown("### 📤 Экспорт")
 
         col1, col2 = st.columns(2)
 
         with col1:
-            excel_data = export_to_excel(sorted_params, rule_info)
-            st.download_button(
-                label="📊 Скачать Excel",
-                data=excel_data,
-                file_name="показатели.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True,
-                key="download_excel"
-            )
+            if selected_count > 0:
+                excel_data = export_to_excel(selected_params, rule_info)
+                st.download_button(
+                    label=f"📊 Скачать Excel ({selected_count})",
+                    data=excel_data,
+                    file_name="показатели.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                    key="download_excel"
+                )
+            else:
+                st.button(
+                    "📊 Скачать Excel (0)",
+                    use_container_width=True,
+                    disabled=True
+                )
 
         with col2:
-            word_data = export_to_word(sorted_params, rule_info)
-            st.download_button(
-                label="📄 Скачать Word",
-                data=word_data,
-                file_name="показатели.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                use_container_width=True,
-                key="download_word"
-            )
+            if selected_count > 0:
+                word_data = export_to_word(selected_params, rule_info)
+                st.download_button(
+                    label=f"📄 Скачать Word ({selected_count})",
+                    data=word_data,
+                    file_name="показатели.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True,
+                    key="download_word"
+                )
+            else:
+                st.button(
+                    "📄 Скачать Word (0)",
+                    use_container_width=True,
+                    disabled=True
+                )
 
         with st.expander("📖 Информация о правиле", expanded=True):
             rule = matched[0]["rule"]
