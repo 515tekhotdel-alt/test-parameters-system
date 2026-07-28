@@ -129,7 +129,7 @@ def main():
     with st.sidebar:
         st.header("🔍 Выберите характеристики")
 
-        st.markdown("### 📌 Выберите регламент")
+        st.markdown("### 📑 Выберите регламент")
 
         col1, col2 = st.columns(2)
 
