@@ -271,6 +271,21 @@ def main():
 
             st.rerun()
 
+        # ===== КОНТАКТНАЯ ИНФОРМАЦИЯ =====
+        st.markdown("---")
+        st.markdown("""
+        <div style='text-align: center; padding: 10px 0;'>
+            <p style='font-size: 14px; color: #888;'>
+                💡 Вопросы, предложения, благодарности:<br>
+                <a href='mailto:515@tekhotdel.com?subject=Подбор%20показателей%20007%20017' 
+                   style='color: #4CAF50; text-decoration: none; font-weight: 600;'>
+                    📧 515@tekhotdel.com
+                </a>
+            </p>
+            <p style='font-size: 24px; margin: 0;'>😊</p>
+        </div>
+        """, unsafe_allow_html=True)
+
     # ===== ОБРАБОТКА ПОИСКА =====
     if search_clicked:
         selected = {
@@ -382,7 +397,6 @@ def main():
 
         with col1:
             if selected_count > 0:
-                # Для экспорта передаем список словарей с методами
                 selected_with_methods = get_parameters_with_methods(selected_params, current_tr_ts, methods_mapping)
                 excel_data = export_to_excel(selected_with_methods, rule_info)
                 st.download_button(
