@@ -1,5 +1,5 @@
 """
-Главный интерфейс приложения — с чекбоксами для показателей
+Главный интерфейс приложения — с чекбоксами для показателей и методами
 """
 
 import sys
@@ -17,7 +17,9 @@ from app.core import (
     get_filtered_values,
     sort_parameters_by_order,
     export_to_excel,
-    export_to_word
+    export_to_word,
+    load_methods_mapping,
+    get_parameters_with_methods
 )
 
 
@@ -120,10 +122,12 @@ def main():
     st.title("📋 Подбор контролируемых показателей")
     st.markdown("---")
 
+    # Загружаем правила и справочник методов
     rules_data = load_rules()
     if not rules_data:
         return
 
+    methods_mapping = load_methods_mapping()
     original_order = load_original_order()
 
     with st.sidebar:
@@ -321,15 +325,29 @@ def main():
         rule_info = st.session_state.last_rule_info
         show_age = st.session_state.last_show_age
 
+        # Определяем текущий ТР ТС для методов
+        tr_ts_labels = {
+            "tr_ts_007": "ТР ТС 007/2011",
+            "tr_ts_017": "ТР ТС 017/2011"
+        }
+        current_tr_ts = tr_ts_labels.get(st.session_state.tr_ts, "ТР ТС 017/2011")
+
         st.success(f"✅ Найдено {len(matched)} подходящих правил")
 
-        # ===== ТАБЛИЦА С ЧЕКБОКСАМИ =====
+        # ===== ТАБЛИЦА С ЧЕКБОКСАМИ (с методами) =====
         st.markdown("### 📋 Список показателей")
+
+        # Получаем показатели с методами
+        params_with_methods = get_parameters_with_methods(sorted_params, current_tr_ts, methods_mapping)
 
         selected_params = []
 
-        for i, p in enumerate(sorted_params):
-            param_key = f"param_{p}"
+        for i, item in enumerate(params_with_methods):
+            param_name = item["name"]
+            param_method = item["method"]
+            display_text = f"{param_name} ({param_method})" if param_method else param_name
+
+            param_key = f"param_{param_name}"
             if param_key not in st.session_state:
                 st.session_state[param_key] = True
 
@@ -347,10 +365,10 @@ def main():
                 )
 
             with col3:
-                st.markdown(f"**{p}**")
+                st.markdown(f"**{display_text}**")
 
             if st.session_state[param_key]:
-                selected_params.append(p)
+                selected_params.append(param_name)
 
         selected_count = len(selected_params)
         total_count = len(sorted_params)
@@ -364,7 +382,9 @@ def main():
 
         with col1:
             if selected_count > 0:
-                excel_data = export_to_excel(selected_params, rule_info)
+                # Для экспорта передаем список словарей с методами
+                selected_with_methods = get_parameters_with_methods(selected_params, current_tr_ts, methods_mapping)
+                excel_data = export_to_excel(selected_with_methods, rule_info)
                 st.download_button(
                     label=f"📊 Скачать Excel ({selected_count})",
                     data=excel_data,
@@ -383,7 +403,8 @@ def main():
 
         with col2:
             if selected_count > 0:
-                word_data = export_to_word(selected_params, rule_info)
+                selected_with_methods = get_parameters_with_methods(selected_params, current_tr_ts, methods_mapping)
+                word_data = export_to_word(selected_with_methods, rule_info)
                 st.download_button(
                     label=f"📄 Скачать Word ({selected_count})",
                     data=word_data,
@@ -418,6 +439,9 @@ def main():
                 rule = item["rule"]
                 params = rule.get("mandatory_parameters", [])
                 sorted_other_params = sort_parameters_by_order(params, original_order)
+                other_with_methods = get_parameters_with_methods(sorted_other_params, current_tr_ts, methods_mapping)
+                other_display = [f"{p['name']} ({p['method']})" if p['method'] else p['name'] for p in
+                                 other_with_methods]
 
                 with st.expander(
                         f"📋 {rule.get('product_type', '?')} — {item['score']}% "
@@ -430,9 +454,9 @@ def main():
                     st.markdown(f"- Конструкция: {rule.get('construction', '-')}")
                     st.markdown(f"- Продуктов в группе: {rule.get('product_count', 0)}")
 
-                    st.markdown(f"**Показатели ({len(sorted_other_params)}):**")
-                    if sorted_other_params:
-                        df_other = pd.DataFrame(sorted_other_params, columns=["Контролируемый показатель"])
+                    st.markdown(f"**Показатели ({len(other_display)}):**")
+                    if other_display:
+                        df_other = pd.DataFrame(other_display, columns=["Контролируемый показатель"])
                         st.dataframe(
                             df_other,
                             use_container_width=True,
