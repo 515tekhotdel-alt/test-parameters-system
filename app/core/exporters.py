@@ -5,17 +5,16 @@
 import io
 import pandas as pd
 from docx import Document
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 
-def export_to_excel(params, rule_info):
+def export_to_excel(params_with_methods, rule_info):
     """
-    Экспортирует список показателей в Excel
-    ВСЕ НА ОДНОМ ЛИСТЕ
+    Экспортирует список показателей с методами в Excel
     """
-    # Данные для Excel (все на одном листе)
     data = []
 
-    # Информация о правиле
     data.append(["Информация о правиле", ""])
     data.append(["Тип изделия", rule_info.get('product_type', '-')])
     data.append(["Возраст", rule_info.get('age', '-')])
@@ -23,15 +22,17 @@ def export_to_excel(params, rule_info):
     data.append(["Конструкция", rule_info.get('construction', '-')])
     data.append(["Продуктов в группе", rule_info.get('product_count', 0)])
     data.append(["Совпадение", f"{rule_info.get('score', 0)}%"])
-    data.append([])  # пустая строка
-    data.append(["СПИСОК ПОКАЗАТЕЛЕЙ:", ""])
+    data.append([])
+    data.append(["№", "Контролируемый показатель", "Метод испытаний"])
 
-    # Показатели
-    for i, param in enumerate(params, 1):
-        data.append([f"{i}. {param}", ""])
+    for i, item in enumerate(params_with_methods, 1):
+        data.append([
+            i,
+            item.get("name", ""),
+            item.get("method", "")
+        ])
 
-    # Создаем DataFrame
-    df = pd.DataFrame(data, columns=["", ""])
+    df = pd.DataFrame(data)
 
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -40,15 +41,15 @@ def export_to_excel(params, rule_info):
     return output.getvalue()
 
 
-def export_to_word(params, rule_info):
+def export_to_word(params_with_methods, rule_info):
     """
-    Экспортирует список показателей в Word
+    Экспортирует список показателей с методами в Word (таблица)
     """
     doc = Document()
 
     # Заголовок
     title = doc.add_heading('Показатели для испытаний', 0)
-    title.alignment = 1
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Информация о правиле
     doc.add_heading('Информация о продукции', level=1)
@@ -61,11 +62,40 @@ def export_to_word(params, rule_info):
 
     doc.add_paragraph()
 
-    # Список показателей
     doc.add_heading('Контролируемые показатели', level=1)
 
-    for i, param in enumerate(params, 1):
-        doc.add_paragraph(f'{i}. {param}')
+    # Создаем таблицу
+    table = doc.add_table(rows=1, cols=3)
+    table.style = 'Light Grid Accent 1'
+
+    # Шапка
+    header_cells = table.rows[0].cells
+    header_cells[0].text = '№'
+    header_cells[1].text = 'Контролируемый показатель'
+    header_cells[2].text = 'Метод испытаний'
+
+    for cell in header_cells:
+        cell.paragraphs[0].runs[0].bold = True
+
+    # Данные
+    for i, item in enumerate(params_with_methods, 1):
+        row = table.add_row()
+        row.cells[0].text = str(i)
+        row.cells[1].text = item.get("name", "")
+        row.cells[2].text = item.get("method", "")
+
+    # Настройка ширины колонок
+    for cell in table.columns[0].cells:
+        cell.width = Inches(0.5)
+    for cell in table.columns[2].cells:
+        cell.width = Inches(2.0)
+    for cell in table.columns[1].cells:
+        cell.width = Inches(4.5)
+
+    # ===== ВСЁ ПО ЛЕВОМУ КРАЮ =====
+    for row in table.rows:
+        for cell in row.cells:
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
 
     output = io.BytesIO()
     doc.save(output)
